@@ -17,6 +17,7 @@ interface ActionDecision {
   responseStyle?: { maxTokens: number; urgency: string; tone: string };
   workingMemorySummary?: string;
   discourseContext?: { currentTopic: string | null; openQuestions: string[]; commitments: string[] };
+  metacognitionContext?: { uncertainty: number; processingLoad: number; emotionalRegulation: string | null };
 }
 
 interface ConversationEntry {
@@ -101,6 +102,7 @@ export class ThoughtBridge {
           responseStyle: decision.responseStyle,
           workingMemorySummary: decision.workingMemorySummary,
           discourseContext: decision.discourseContext,
+          metacognitionContext: decision.metacognitionContext,
         }),
       });
 

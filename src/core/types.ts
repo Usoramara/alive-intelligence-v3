@@ -64,6 +64,8 @@ export type SignalType =
   | 'tom-model-update'
   | 'prediction-validated'
   | 'prediction-error'
+  // Metacognition signals
+  | 'metacognition-update'
   // System signals
   | 'engine-status'
   | 'persist-state'
@@ -85,7 +87,7 @@ export interface Signal<T = unknown> {
 export interface StreamEntry {
   text: string;
   source: string;
-  flavor: 'wandering' | 'emotional' | 'memory' | 'curiosity' | 'reflection' | 'urge';
+  flavor: 'wandering' | 'emotional' | 'memory' | 'curiosity' | 'reflection' | 'urge' | 'metacognitive';
   timestamp: number;
   intensity: number; // 0-1
 }

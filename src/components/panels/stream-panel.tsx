@@ -10,7 +10,8 @@ const FLAVOR_STYLES: Record<StreamEntry['flavor'], { color: string; label: strin
   memory:     { color: '#60a5fa', label: 'memory' },
   curiosity:  { color: '#a78bfa', label: 'curiosity' },
   reflection: { color: '#34d399', label: 'reflection' },
-  urge:       { color: '#fb923c', label: 'urge' },
+  urge:           { color: '#fb923c', label: 'urge' },
+  metacognitive:  { color: '#06b6d4', label: 'meta' },
 };
 
 export function StreamPanel() {

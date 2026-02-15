@@ -48,6 +48,7 @@ export interface ThinkParams {
   responseStyle?: ResponseStyle;
   workingMemorySummary?: string;
   discourseContext?: { currentTopic: string | null; openQuestions: string[]; commitments: string[] };
+  metacognitionContext?: { uncertainty: number; processingLoad: number; emotionalRegulation: string | null };
 }
 
 export interface ThinkResult {
@@ -148,6 +149,24 @@ ${params.workingMemorySummary}`);
     if (parts.length > 0) {
       sections.push(`DISCOURSE STATE:\n${parts.join('\n')}
 Address open questions if relevant. Honor your commitments.`);
+    }
+  }
+
+  // Metacognition context
+  if (params.metacognitionContext) {
+    const { uncertainty, processingLoad, emotionalRegulation } = params.metacognitionContext;
+    const parts: string[] = [];
+    if (uncertainty > 0.6) {
+      parts.push(`You are uncertain about the current topic (uncertainty: ${(uncertainty * 100).toFixed(0)}%). It's okay to say "I'm not sure" or ask clarifying questions rather than asserting.`);
+    }
+    if (processingLoad > 0.7) {
+      parts.push(`Your cognitive load is high (${(processingLoad * 100).toFixed(0)}%). Keep your response focused and concise.`);
+    }
+    if (emotionalRegulation) {
+      parts.push(`Active emotional regulation: ${emotionalRegulation}. Be aware of your internal state.`);
+    }
+    if (parts.length > 0) {
+      sections.push(`METACOGNITION:\n${parts.join('\n')}`);
     }
   }
 

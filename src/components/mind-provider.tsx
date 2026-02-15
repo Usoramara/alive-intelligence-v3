@@ -39,6 +39,8 @@ import { GrowthEngine } from '@/core/engines/thalamus/growth-engine';
 // Evolution — Working Memory & Discourse
 import { WorkingMemoryEngine } from '@/core/engines/thalamus/working-memory-engine';
 import { DiscourseEngine } from '@/core/engines/thalamus/discourse-engine';
+// Phase 4 — Metacognition
+import { MetacognitionEngine } from '@/core/engines/thalamus/metacognition-engine';
 // Phase 7 — Body & Safety
 import { MicrophoneEngine } from '@/core/engines/outer/microphone-engine';
 import { SafetyEngine } from '@/core/engines/outer/safety-engine';
@@ -94,6 +96,9 @@ export function MindProvider({ children }: { children: ReactNode }) {
     // Evolution engines — Working Memory & Discourse
     loop.registerEngine(new WorkingMemoryEngine());
     loop.registerEngine(new DiscourseEngine());
+
+    // Phase 4 engines
+    loop.registerEngine(new MetacognitionEngine());
 
     // Phase 7 engines
     loop.registerEngine(new MicrophoneEngine());

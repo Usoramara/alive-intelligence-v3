@@ -31,6 +31,7 @@ interface ActionDecision {
   responseStyle?: ResponseStyle;
   workingMemorySummary?: string;
   discourseContext?: { currentTopic: string | null; openQuestions: string[]; commitments: string[] };
+  metacognitionContext?: { uncertainty: number; processingLoad: number; emotionalRegulation: string | null };
 }
 
 export class ArbiterEngine extends Engine {
@@ -46,6 +47,7 @@ export class ArbiterEngine extends Engine {
   private latestStrategicPriority?: { description: string; priority: number; progress: number };
   private latestWorkingMemory?: { summary: string; items: unknown[] };
   private latestDiscourse?: { currentTopic: string | null; openQuestions: string[]; commitments: string[] };
+  private latestMetacognition?: { uncertainty: number; processingLoad: number; emotionalRegulation: string | null; coherence: number };
 
   // Energy recovery tracking
   private energyDeferralCount = 0;
@@ -68,6 +70,7 @@ export class ArbiterEngine extends Engine {
       'strategy-update',
       'working-memory-update',
       'discourse-state',
+      'metacognition-update',
     ];
   }
 
@@ -139,6 +142,8 @@ export class ArbiterEngine extends Engine {
         this.latestWorkingMemory = signal.payload as typeof this.latestWorkingMemory;
       } else if (signal.type === 'discourse-state') {
         this.latestDiscourse = signal.payload as typeof this.latestDiscourse;
+      } else if (signal.type === 'metacognition-update') {
+        this.latestMetacognition = signal.payload as typeof this.latestMetacognition;
       }
     }
 
@@ -199,6 +204,13 @@ export class ArbiterEngine extends Engine {
           responseStyle,
           workingMemorySummary: this.latestWorkingMemory?.summary,
           discourseContext: this.latestDiscourse,
+          metacognitionContext: this.latestMetacognition
+            ? {
+                uncertainty: this.latestMetacognition.uncertainty,
+                processingLoad: this.latestMetacognition.processingLoad,
+                emotionalRegulation: this.latestMetacognition.emotionalRegulation,
+              }
+            : undefined,
         };
 
         this.emit('thought', actionDecision, {
