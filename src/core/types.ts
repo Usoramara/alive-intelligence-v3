@@ -60,6 +60,10 @@ export type SignalType =
   | 'working-memory-update'
   | 'discourse-state'
   | 'item-evicted'
+  // Theory of Mind & prediction signals
+  | 'tom-model-update'
+  | 'prediction-validated'
+  | 'prediction-error'
   // System signals
   | 'engine-status'
   | 'persist-state'
