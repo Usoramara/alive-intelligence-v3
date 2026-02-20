@@ -64,7 +64,7 @@ export interface ThinkResult {
   toolActivities?: ToolActivity[];
 }
 
-function buildBehavioralInstructions(params: ThinkParams): string {
+export function buildBehavioralInstructions(params: ThinkParams): string {
   const sections: string[] = [];
 
   // Detected emotions → behavioral directives
