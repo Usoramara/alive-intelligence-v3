@@ -96,13 +96,20 @@ export async function POST(request: Request): Promise<Response> {
   // 7. Proxy to real Anthropic API
   const anthropicVersion = request.headers.get('anthropic-version') ?? '2023-06-01';
 
+  const anthropicBeta = request.headers.get('anthropic-beta');
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'x-api-key': anthropicApiKey,
+    'anthropic-version': anthropicVersion,
+  };
+  if (anthropicBeta) {
+    headers['anthropic-beta'] = anthropicBeta;
+  }
+
   const upstreamResponse = await fetch(ANTHROPIC_API_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicApiKey,
-      'anthropic-version': anthropicVersion,
-    },
+    headers,
     body: JSON.stringify(anthropicBody),
   });
 

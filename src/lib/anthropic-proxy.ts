@@ -60,18 +60,13 @@ export function createShiftFilteringStream(
         pendingTextEvents = [];
       }
 
-      // Flush any held non-text events
-      for (const evt of pendingNonTextEvents) {
-        controller.enqueue(encoder.encode(evt + '\n\n'));
-      }
-      pendingNonTextEvents = [];
+      // Non-text events now pass through immediately, no flush needed
     },
   });
 
   // SSE parsing state
   let sseRemainder = '';
-  // Non-text events that arrived during buffering — always emit at flush
-  let pendingNonTextEvents: string[] = [];
+  // Non-text events now pass through immediately (not buffered)
 
   function processRaw(raw: string, controller: TransformStreamDefaultController<Uint8Array>) {
     sseRemainder += raw;
@@ -105,10 +100,11 @@ export function createShiftFilteringStream(
       }
     }
 
-    // Non-text event (content_block_stop, message_delta, message_stop, etc.)
-    if (buffering) {
-      // Hold non-text events too — we'll emit them at flush
-      pendingNonTextEvents.push(event);
+    // Non-text event (content_block_stop, message_delta, tool_use, etc.)
+    // During buffering, only hold back text — non-text events pass through
+    // immediately so tool_use blocks aren't delayed.
+    if (!isTextDelta) {
+      controller.enqueue(encoder.encode(event + '\n\n'));
       return;
     }
 
