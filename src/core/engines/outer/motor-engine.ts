@@ -2,6 +2,7 @@ import { Engine } from '../../engine';
 import { ENGINE_IDS, SIGNAL_PRIORITIES } from '../../constants';
 import { isSignal } from '../../types';
 import type { Signal, SignalType } from '../../types';
+import type { BodyIntent } from '../../hal/types';
 
 export class MotorEngine extends Engine {
   constructor() {
@@ -23,10 +24,22 @@ export class MotorEngine extends Engine {
         this.debugInfo = 'Motor halted (safety)';
       } else if (isSignal(signal, 'motor-command')) {
         const cmd = signal.payload;
+
+        // Forward to locomotion for backward compatibility
         this.emit('locomotion-update', cmd, {
           target: ENGINE_IDS.LOCOMOTION,
           priority: SIGNAL_PRIORITIES.MEDIUM,
         });
+
+        // Also emit body-intent for the Body Gateway
+        this.emit('body-intent', {
+          type: 'gesture',
+          gesture: cmd.action,
+        } satisfies BodyIntent, {
+          target: ENGINE_IDS.BODY_GATEWAY,
+          priority: SIGNAL_PRIORITIES.MEDIUM,
+        });
+
         this.debugInfo = `Motor: ${cmd.action}`;
       }
     }

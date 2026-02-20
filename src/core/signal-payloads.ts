@@ -7,6 +7,7 @@ import type {
   EmotionDetection,
 } from './types';
 import type { EngineId } from './constants';
+import type { BodyIntent, BodyManifest, TaskStatus, TaskUpdateEvent } from './hal/types';
 
 // ── Signal Payload Map ──
 // Maps each SignalType to its concrete payload shape.
@@ -96,6 +97,13 @@ export interface SignalPayloadMap {
 
   // Tool activity signals
   'tool-activity': { toolName: string; status: 'started' | 'completed' | 'error'; input?: Record<string, unknown>; result?: string };
+
+  // Body HAL signals
+  'body-intent': BodyIntent;
+  'body-feedback': { taskId: string; status: TaskStatus; result?: unknown; error?: string };
+  'body-manifest': BodyManifest;
+  'body-status': { bodyId: string; connected: boolean; bodyType: string };
+  'body-task-update': TaskUpdateEvent;
 
   // System signals
   'engine-status': { engine: EngineId; status: string; action?: string };

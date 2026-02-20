@@ -130,3 +130,33 @@ export const reflectParamsSchema = z.object({
   count: z.number().int().min(1).max(12).optional(),
   flavorHints: z.array(z.string().max(100)).max(10).optional(),
 });
+
+// ── Body HAL schemas ──
+
+const simpleBodyIntentSchema = z.union([
+  z.object({ type: z.literal('move'), destination: z.string().max(1_000), speed: z.number().optional() }),
+  z.object({ type: z.literal('gesture'), gesture: z.string().max(200), target: z.string().max(1_000).optional() }),
+  z.object({ type: z.literal('look'), target: z.string().max(1_000), modality: z.string().max(100).optional() }),
+  z.object({ type: z.literal('grasp'), object: z.string().max(1_000), action: z.enum(['pick-up', 'put-down', 'hand-over']) }),
+  z.object({ type: z.literal('speak'), text: z.string().max(10_000), emotion: z.string().max(100).optional() }),
+  z.object({ type: z.literal('express'), emotion: z.string().max(100), intensity: z.number().min(0).max(1) }),
+  z.object({ type: z.literal('system'), command: z.string().max(500), params: z.record(z.string(), z.unknown()) }),
+]);
+
+// Composite intents contain sub-intents (only 1 level deep to avoid recursive schema complexity)
+const bodyIntentSchema = z.union([
+  ...simpleBodyIntentSchema.options,
+  z.object({ type: z.literal('composite'), intents: z.array(simpleBodyIntentSchema).max(20), mode: z.enum(['sequential', 'parallel']) }),
+]);
+
+export const bodyExecuteSchema = z.object({
+  intent: bodyIntentSchema,
+  bodyId: z.string().max(200).optional(),
+});
+
+export const bodyDecomposeSchema = z.object({
+  intent: bodyIntentSchema,
+  manifest: z.record(z.string(), z.unknown()),
+  systemPrompt: z.string().max(50_000),
+  userPrompt: z.string().max(10_000),
+});

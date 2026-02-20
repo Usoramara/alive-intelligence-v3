@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { MindProvider } from '@/components/mind-provider';
 import { BrainMap } from '@/components/brain-map/brain-map';
 import { SelfStatePanel } from '@/components/panels/self-state-panel';
@@ -28,6 +29,9 @@ export default function Home() {
               Wybe&apos;s cognitive architecture — live
             </p>
           </div>
+          <Link href="/thoughts" className="text-xs font-mono text-white/25 hover:text-white/50 transition-colors">
+            Thought Processing →
+          </Link>
         </header>
 
         {/* Main content */}

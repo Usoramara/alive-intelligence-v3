@@ -3,6 +3,7 @@
 import { createContext, useEffect, useRef, type ReactNode } from 'react';
 import { CognitiveLoop } from '@/core/cognitive-loop';
 import { ThoughtBridge } from '@/core/thought-bridge';
+import { BodyBridge } from '@/core/body-bridge';
 import { ENGINE_IDS } from '@/core/constants';
 
 // Phase 2 — Outer
@@ -50,6 +51,7 @@ import { SafetyEngine } from '@/core/engines/outer/safety-engine';
 import { MotorEngine } from '@/core/engines/outer/motor-engine';
 import { ExpressionEngine } from '@/core/engines/body/expression-engine';
 import { LocomotionEngine } from '@/core/engines/body/locomotion-engine';
+import { BodyGatewayEngine } from '@/core/engines/body/body-gateway-engine';
 import { SyncEngine } from '@/core/engines/thalamus/sync-engine';
 
 export const MindContext = createContext<CognitiveLoop | null>(null);
@@ -58,6 +60,7 @@ export const ConversationIdContext = createContext<string | undefined>(undefined
 export function MindProvider({ children, conversationId }: { children: ReactNode; conversationId?: string }) {
   const loopRef = useRef<CognitiveLoop | null>(null);
   const bridgeRef = useRef<ThoughtBridge | null>(null);
+  const bodyBridgeRef = useRef<BodyBridge | null>(null);
 
   if (!loopRef.current) {
     const loop = new CognitiveLoop();
@@ -114,6 +117,7 @@ export function MindProvider({ children, conversationId }: { children: ReactNode
     loop.registerEngine(new MotorEngine());
     loop.registerEngine(new ExpressionEngine());
     loop.registerEngine(new LocomotionEngine());
+    loop.registerEngine(new BodyGatewayEngine());
     loop.registerEngine(new SyncEngine());
 
     loopRef.current = loop;
@@ -122,6 +126,7 @@ export function MindProvider({ children, conversationId }: { children: ReactNode
   useEffect(() => {
     const loop = loopRef.current!;
     bridgeRef.current = new ThoughtBridge(loop.bus);
+    bodyBridgeRef.current = new BodyBridge(loop.bus);
 
     // Restore persisted state
     const persistence = loop.getEngine<PersistenceEngine>(ENGINE_IDS.PERSISTENCE);
@@ -131,6 +136,7 @@ export function MindProvider({ children, conversationId }: { children: ReactNode
 
     return () => {
       bridgeRef.current?.destroy();
+      bodyBridgeRef.current?.destroy();
       loop.destroy();
     };
   }, []);

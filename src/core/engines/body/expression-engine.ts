@@ -1,7 +1,8 @@
 import { Engine } from '../../engine';
-import { ENGINE_IDS } from '../../constants';
+import { ENGINE_IDS, SIGNAL_PRIORITIES } from '../../constants';
 import { isSignal } from '../../types';
 import type { Signal, SignalType } from '../../types';
+import type { BodyIntent, BodyManifest } from '../../hal/types';
 
 export interface ExpressionState {
   speaking: boolean;
@@ -31,12 +32,15 @@ export class ExpressionEngine extends Engine {
     jawTension: 0,
   };
 
+  private bodyManifest: BodyManifest | null = null;
+  private lastEmittedEmotion: string | null = null;
+
   constructor() {
     super(ENGINE_IDS.EXPRESSION);
   }
 
   protected subscribesTo(): SignalType[] {
-    return ['expression-update', 'empathic-state', 'love-field-update', 'voice-output', 'voice-output-partial'];
+    return ['expression-update', 'empathic-state', 'love-field-update', 'voice-output', 'voice-output-partial', 'body-manifest'];
   }
 
   getExpressionState(): ExpressionState {
@@ -45,6 +49,10 @@ export class ExpressionEngine extends Engine {
 
   protected process(signals: Signal[]): void {
     for (const signal of signals) {
+      if (isSignal(signal, 'body-manifest')) {
+        this.bodyManifest = signal.payload;
+      }
+
       if (isSignal(signal, 'expression-update')) {
         const update = signal.payload as unknown as Partial<ExpressionState>;
         Object.assign(this.expressionState, update);
@@ -115,6 +123,32 @@ export class ExpressionEngine extends Engine {
     this.debugInfo = this.expressionState.speaking ? 'Speaking' :
       `mouth:${this.expressionState.mouthCurve.toFixed(1)} brow:${this.expressionState.browRaise.toFixed(1)}`;
 
+    // If body has physical expression capability, emit body-intent to update it
+    if (this.bodyManifest?.capabilities.expression) {
+      const dominantEmotion = this.deriveDominantEmotion(s);
+      if (dominantEmotion !== this.lastEmittedEmotion) {
+        this.lastEmittedEmotion = dominantEmotion;
+        this.emit('body-intent', {
+          type: 'express',
+          emotion: dominantEmotion,
+          intensity: Math.abs(s.valence) * 0.5 + s.arousal * 0.5,
+        } satisfies BodyIntent, {
+          target: ENGINE_IDS.BODY_GATEWAY,
+          priority: SIGNAL_PRIORITIES.LOW,
+        });
+      }
+    }
+
     this.status = 'idle';
+  }
+
+  private deriveDominantEmotion(s: { valence: number; arousal: number; curiosity: number }): string {
+    if (s.valence > 0.3 && s.arousal > 0.4) return 'happy';
+    if (s.valence > 0.3) return 'neutral';
+    if (s.valence < -0.3 && s.arousal > 0.5) return 'angry';
+    if (s.valence < -0.3) return 'sad';
+    if (s.curiosity > 0.6) return 'curious';
+    if (s.arousal > 0.6) return 'surprised';
+    return 'neutral';
   }
 }

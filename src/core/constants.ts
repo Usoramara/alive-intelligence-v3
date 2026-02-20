@@ -45,6 +45,7 @@ export const ENGINE_IDS = {
   VOICE: 'voice',
   LOCOMOTION: 'locomotion',
   PERSISTENCE: 'persistence',
+  BODY_GATEWAY: 'body-gateway',
 } as const;
 
 export type EngineId = (typeof ENGINE_IDS)[keyof typeof ENGINE_IDS];
@@ -93,6 +94,7 @@ export const TICK_RATES: Record<EngineId, number> = {
   [ENGINE_IDS.VOICE]: 100,           // TTS
   [ENGINE_IDS.LOCOMOTION]: 200,      // Movement
   [ENGINE_IDS.PERSISTENCE]: 10000,   // Save to IndexedDB
+  [ENGINE_IDS.BODY_GATEWAY]: 100,    // Body HAL gateway
 };
 
 // Engine zones mapping
@@ -135,6 +137,7 @@ export const ENGINE_ZONES: Record<EngineId, Zone> = {
   [ENGINE_IDS.VOICE]: 'body',
   [ENGINE_IDS.LOCOMOTION]: 'body',
   [ENGINE_IDS.PERSISTENCE]: 'body',
+  [ENGINE_IDS.BODY_GATEWAY]: 'body',
 };
 
 // Engine display names
@@ -177,6 +180,7 @@ export const ENGINE_NAMES: Record<EngineId, string> = {
   [ENGINE_IDS.VOICE]: 'Voice',
   [ENGINE_IDS.LOCOMOTION]: 'Locomotion',
   [ENGINE_IDS.PERSISTENCE]: 'Persistence',
+  [ENGINE_IDS.BODY_GATEWAY]: 'Body Gateway',
 };
 
 // Signal priorities (higher = processed first)
@@ -251,6 +255,7 @@ export const ENGINE_POSITIONS: Record<EngineId, { x: number; y: number }> = {
   [ENGINE_IDS.VOICE]:        { x: 0.50, y: 0.88 },
   [ENGINE_IDS.LOCOMOTION]:   { x: 0.62, y: 0.88 },
   [ENGINE_IDS.PERSISTENCE]:  { x: 0.50, y: 0.96 },
+  [ENGINE_IDS.BODY_GATEWAY]: { x: 0.50, y: 0.80 },
 };
 
 // Signal paths (edges between engines) — the ~80 connections
@@ -365,6 +370,13 @@ export const SIGNAL_PATHS: Array<[EngineId, EngineId]> = [
   ['prediction', 'metacognition'],
   ['prediction', 'attention'],
   ['resource-manager', 'arbiter'],
+
+  // Body Gateway — HAL bridge
+  ['motor', 'body-gateway'],
+  ['arbiter', 'body-gateway'],
+  ['body-gateway', 'expression'],
+  ['body-gateway', 'voice'],
+  ['body-gateway', 'locomotion'],
 
   // Consciousness stream — self-loop for thought chaining
   ['default-mode', 'default-mode'],

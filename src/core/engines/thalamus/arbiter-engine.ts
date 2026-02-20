@@ -2,6 +2,7 @@ import { Engine } from '../../engine';
 import { ENGINE_IDS, SIGNAL_PRIORITIES } from '../../constants';
 import { isSignal } from '../../types';
 import type { Signal, SignalType, SelfState, BoundRepresentation, ResponseStyle, ActionDecision } from '../../types';
+import type { BodyManifest, TaskStatus } from '../../hal/types';
 
 export class ArbiterEngine extends Engine {
   private pendingDecisions: BoundRepresentation[] = [];
@@ -18,6 +19,10 @@ export class ArbiterEngine extends Engine {
   private latestDiscourse?: { currentTopic: string | null; openQuestions: string[]; commitments: string[] };
   private latestMetacognition?: { uncertainty: number; processingLoad: number; emotionalRegulation: string | null; coherence: number };
   private latestResourceBudget?: { sonnetRemaining: number; suggestedMaxTokens: number; useLite: boolean };
+
+  // Body HAL context
+  private bodyManifest: BodyManifest | null = null;
+  private lastBodyFeedback: { status: TaskStatus; error?: string } | null = null;
 
   // Energy recovery tracking
   private energyDeferralCount = 0;
@@ -42,6 +47,8 @@ export class ArbiterEngine extends Engine {
       'discourse-state',
       'metacognition-update',
       'resource-budget',
+      'body-feedback',
+      'body-manifest',
     ];
   }
 
@@ -115,6 +122,13 @@ export class ArbiterEngine extends Engine {
         this.latestMetacognition = signal.payload;
       } else if (isSignal(signal, 'resource-budget')) {
         this.latestResourceBudget = signal.payload;
+      } else if (isSignal(signal, 'body-manifest')) {
+        this.bodyManifest = signal.payload;
+      } else if (isSignal(signal, 'body-feedback')) {
+        this.lastBodyFeedback = {
+          status: signal.payload.status,
+          error: signal.payload.error,
+        };
       }
     }
 
@@ -165,11 +179,19 @@ export class ArbiterEngine extends Engine {
         }
         const useLite = this.latestResourceBudget?.useLite ?? false;
 
+        // Build body awareness context for Claude
+        const bodyContext = this.buildBodyContext();
+
+        // Inject body context into decision context
+        const enrichedContext = bodyContext
+          ? [...decision.context, bodyContext]
+          : decision.context;
+
         // Request Claude thinking via server — pack in enriched context
         const actionDecision: ActionDecision = {
           action: 'respond',
           content: decision.content,
-          context: decision.context,
+          context: enrichedContext,
           selfState: decision.selfState,
           timestamp: Date.now(),
           empathicState: this.latestEmpathicState,
@@ -228,5 +250,58 @@ export class ArbiterEngine extends Engine {
     else if (selfState.energy < 0.3 || selfState.valence < -0.2) tone = 'gentle';
 
     return { maxTokens, urgency, tone };
+  }
+
+  /**
+   * Build a body awareness context string for Claude's system prompt.
+   * This lets Claude know what physical capabilities are available.
+   */
+  private buildBodyContext(): string | null {
+    if (!this.bodyManifest) return null;
+
+    const caps = this.bodyManifest.capabilities;
+    const canDo: string[] = [];
+    const cannotDo: string[] = [];
+
+    if (caps.locomotion && caps.locomotion.type !== 'none') {
+      canDo.push(`walk (${caps.locomotion.type}, ${caps.locomotion.dof} DOF)`);
+      if (caps.locomotion.presetMotions.length > 0) {
+        canDo.push(`gestures: ${caps.locomotion.presetMotions.join(', ')}`);
+      }
+    } else {
+      cannotDo.push('walk or move');
+    }
+
+    if (caps.manipulation) {
+      canDo.push(`use ${caps.manipulation.arms} arm(s) to grasp objects`);
+    } else {
+      cannotDo.push('grasp or manipulate objects');
+    }
+
+    if (caps.speech?.tts) {
+      canDo.push('speak aloud');
+    }
+
+    if (caps.expression) {
+      canDo.push(`display facial expressions (${caps.expression.type})`);
+    }
+
+    for (const sys of caps.system) {
+      canDo.push(`${sys.name}: ${sys.description}`);
+    }
+
+    const lines = [`[BODY] Your body: ${this.bodyManifest.displayName} (${this.bodyManifest.bodyType})`];
+    if (canDo.length > 0) lines.push(`You can: ${canDo.join('; ')}.`);
+    if (cannotDo.length > 0) lines.push(`You cannot: ${cannotDo.join('; ')}.`);
+
+    if (this.bodyManifest.limits.batteryPercent !== null) {
+      lines.push(`Battery: ${this.bodyManifest.limits.batteryPercent.toFixed(0)}%`);
+    }
+
+    if (this.lastBodyFeedback) {
+      lines.push(`Last body action: ${this.lastBodyFeedback.status}${this.lastBodyFeedback.error ? ` (${this.lastBodyFeedback.error})` : ''}`);
+    }
+
+    return lines.join(' ');
   }
 }

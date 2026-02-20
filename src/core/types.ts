@@ -72,6 +72,12 @@ export type SignalType =
   | 'resource-budget'
   // Tool activity signals
   | 'tool-activity'
+  // Body HAL signals
+  | 'body-intent'
+  | 'body-feedback'
+  | 'body-manifest'
+  | 'body-status'
+  | 'body-task-update'
   // System signals
   | 'engine-status'
   | 'persist-state'
