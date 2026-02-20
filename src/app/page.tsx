@@ -29,9 +29,17 @@ export default function Home() {
               Wybe&apos;s cognitive architecture — live
             </p>
           </div>
-          <Link href="/thoughts" className="text-xs font-mono text-white/25 hover:text-white/50 transition-colors">
-            Thought Processing →
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/system" className="text-xs font-mono text-white/25 hover:text-white/50 transition-colors">
+              System →
+            </Link>
+            <Link href="/openclaw" className="text-xs font-mono text-white/25 hover:text-white/50 transition-colors">
+              OpenClaw →
+            </Link>
+            <Link href="/thoughts" className="text-xs font-mono text-white/25 hover:text-white/50 transition-colors">
+              Thoughts →
+            </Link>
+          </div>
         </header>
 
         {/* Main content */}

@@ -25,7 +25,15 @@ export default function ThoughtsPage() {
               Thought Processing
             </h1>
           </div>
-          <SelfStateTimeline />
+          <div className="flex items-center gap-4">
+            <Link href="/system" className="text-xs font-mono text-white/30 hover:text-white/60 transition-colors">
+              System →
+            </Link>
+            <Link href="/openclaw" className="text-xs font-mono text-white/30 hover:text-white/60 transition-colors">
+              OpenClaw →
+            </Link>
+            <SelfStateTimeline />
+          </div>
         </header>
 
         {/* Main content — 60/40 split */}
