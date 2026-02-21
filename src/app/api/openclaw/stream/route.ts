@@ -65,6 +65,11 @@ const BRIDGE_EVENTS = [
   'cron.fired',
   'node.connected',
   'node.disconnected',
+  'device.pair.request',
+  'device.pair.approved',
+  'exec.approval.request',
+  'exec.approval.resolved',
+  'update-available',
 ] as const;
 
 export async function GET() {
