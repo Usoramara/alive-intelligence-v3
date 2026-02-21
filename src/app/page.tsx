@@ -6,6 +6,7 @@ import { MindProvider } from '@/components/mind-provider';
 import { BrainMap } from '@/components/brain-map/brain-map';
 import { SelfStatePanel } from '@/components/panels/self-state-panel';
 import { EngineInspector } from '@/components/panels/engine-inspector';
+import { VoicePanel } from '@/components/panels/voice-panel';
 import { SignalLog } from '@/components/panels/signal-log';
 import { InputPanel } from '@/components/panels/input-panel';
 import { ConversationPanel } from '@/components/panels/conversation-panel';
@@ -47,6 +48,7 @@ export default function Home() {
           {/* Left sidebar — state + conversation */}
           <aside className="w-72 shrink-0 flex flex-col gap-3 min-h-0">
             <SelfStatePanel />
+            <VoicePanel />
             <EngineInspector engineId={selectedEngine} />
             <div className="flex-1 min-h-0">
               <ConversationPanel />
